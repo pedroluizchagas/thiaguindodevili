@@ -23,7 +23,7 @@ export interface Combo {
   name: string
   description: string
   price: string
-  features: string[]
+  features: readonly string[]
   popular: boolean
 }
 

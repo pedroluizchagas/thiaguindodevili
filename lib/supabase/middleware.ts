@@ -1,14 +1,37 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
+function getSupabaseUrl() {
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!rawUrl) {
+    throw new Error("Configuração ausente: defina NEXT_PUBLIC_SUPABASE_URL")
+  }
+
+  const normalizedUrl = rawUrl.startsWith("http://") || rawUrl.startsWith("https://") ? rawUrl : `https://${rawUrl}`
+
+  try {
+    return new URL(normalizedUrl).toString().replace(/\/$/, "")
+  } catch {
+    throw new Error(`Configuração inválida: NEXT_PUBLIC_SUPABASE_URL="${rawUrl}"`)
+  }
+}
+
+function getSupabaseAnonKey() {
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!anonKey) {
+    throw new Error("Configuração ausente: defina NEXT_PUBLIC_SUPABASE_ANON_KEY")
+  }
+  return anonKey
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl(),
+    getSupabaseAnonKey(),
     {
       cookies: {
         getAll() {
@@ -25,9 +48,15 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null as Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"]
+  try {
+    const {
+      data: { user: resolvedUser },
+    } = await supabase.auth.getUser()
+    user = resolvedUser
+  } catch {
+    user = null
+  }
 
   const isLoginPage = request.nextUrl.pathname === "/admin/login"
 

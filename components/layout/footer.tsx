@@ -12,7 +12,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="space-y-6">
-            <Image src="/images/logo.png" alt={COMPANY_INFO.name} width={160} height={70} className="h-14 w-auto" />
+            <Image
+              src="/images/logo-qff.png"
+              alt={COMPANY_INFO.name}
+              width={220}
+              height={88}
+              className="h-16 w-auto object-contain sm:h-[72px] md:h-20 max-w-[260px] sm:max-w-[300px]"
+            />
             <p className="text-muted-foreground leading-relaxed">{COMPANY_INFO.tagline}</p>
             <div className="flex gap-4">
               <Link

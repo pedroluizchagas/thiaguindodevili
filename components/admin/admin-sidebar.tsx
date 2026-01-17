@@ -40,8 +40,15 @@ export function AdminSidebar({ profile, isOpen, onClose }: AdminSidebarProps) {
       >
         {/* Logo */}
         <div className="p-4 border-b border-border flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2">
-            <Image src="/images/logo.png" alt="Quem Fez, Fez!" width={140} height={50} className="object-contain" />
+          <Link href="/admin" className="flex items-center min-w-0">
+            <Image
+              src="/images/logo-qff.png"
+              alt="Quem Fez, Fez!"
+              width={200}
+              height={80}
+              className="h-16 w-auto object-contain sm:h-[72px] md:h-20 max-w-[180px] sm:max-w-[200px]"
+              priority
+            />
           </Link>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose}>
             <X className="h-5 w-5" />

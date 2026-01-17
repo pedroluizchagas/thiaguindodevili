@@ -21,11 +21,11 @@ export default function AdminLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    const supabase = createClient()
     setIsLoading(true)
     setError(null)
 
     try {
+      const supabase = createClient()
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -34,7 +34,14 @@ export default function AdminLoginPage() {
       router.push("/admin")
       router.refresh()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Erro ao fazer login")
+      const message =
+        err instanceof TypeError && err.message.toLowerCase().includes("failed to fetch")
+          ? "Falha de rede ao conectar no Supabase. Verifique a URL do Supabase (NEXT_PUBLIC_SUPABASE_URL) e sua conexão."
+          : err instanceof Error
+            ? err.message
+            : "Erro ao fazer login"
+
+      setError(message)
     } finally {
       setIsLoading(false)
     }
@@ -44,7 +51,14 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center gap-6 mb-8">
-          <Image src="/images/logo.png" alt="Quem Fez, Fez! Logo" width={200} height={80} className="object-contain" />
+          <Image
+            src="/images/logo-qff.png"
+            alt="Quem Fez, Fez! Logo"
+            width={280}
+            height={112}
+            className="h-16 w-auto object-contain md:h-20 max-w-[240px]"
+            priority
+          />
           <div className="flex items-center gap-2 text-muted-foreground">
             <Flame className="h-5 w-5 text-primary" />
             <span className="font-semibold">Painel Administrativo</span>

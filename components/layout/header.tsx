@@ -30,13 +30,13 @@ export function Header() {
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="relative z-10">
+          <Link href="/" className="relative z-10 flex items-center">
             <Image
-              src="/images/logo.png"
+              src="/images/logo-qff.png"
               alt={COMPANY_INFO.name}
-              width={140}
-              height={60}
-              className="h-12 w-auto"
+              width={200}
+              height={80}
+              className="h-16 w-auto object-contain sm:h-[72px] md:h-20 max-w-[260px] sm:max-w-[300px]"
               priority
             />
           </Link>

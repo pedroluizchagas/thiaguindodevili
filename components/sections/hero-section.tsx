@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button"
 import { ChevronDown, Play } from "lucide-react"
 import Image from "next/image"
 
+function pseudoRandom(seed: number) {
+  const x = Math.sin(seed) * 10000
+  return x - Math.floor(x)
+}
+
 export function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -31,10 +36,10 @@ export function HeroSection() {
             key={i}
             className="absolute w-1 h-1 bg-primary rounded-full animate-ember"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-              opacity: Math.random() * 0.5 + 0.3,
+              left: `${pseudoRandom(i * 31 + 1) * 100}%`,
+              top: `${pseudoRandom(i * 31 + 2) * 100}%`,
+              animationDelay: `${pseudoRandom(i * 31 + 3) * 2}s`,
+              opacity: pseudoRandom(i * 31 + 4) * 0.5 + 0.3,
             }}
           />
         ))}
