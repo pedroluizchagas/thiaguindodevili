@@ -23,6 +23,8 @@ export function StepCheckout() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [createdOrderNumber, setCreatedOrderNumber] = useState<number | null>(null)
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -34,30 +36,63 @@ export function StepCheckout() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setSubmitError(null)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    if (!state.selectedMeat) {
+      setIsSubmitting(false)
+      setSubmitError("Selecione um kit de carnes antes de agendar.")
+      return
+    }
 
-    setIsSubmitting(false)
-    setIsSuccess(true)
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer: formData,
+          selection: {
+            guests: state.guests,
+            meatId: state.selectedMeat.id,
+            beverages: state.selectedBeverages.map((b) => ({ id: b.option.id, quantity: b.quantity })),
+            services: state.selectedServices.map((s) => s.id),
+            accompaniments: state.selectedAccompaniments.map((a) => a.id),
+          },
+        }),
+      })
 
-    // Redirect to WhatsApp after success
-    setTimeout(() => {
-      const message = encodeURIComponent(
-        `Olá! Gostaria de agendar minha resenha:\n\n` +
-          `Nome: ${formData.name}\n` +
-          `Pessoas: ${summary.guests}\n` +
-          `Kit: ${summary.meatKit}\n` +
-          `Bebidas: ${summary.beverages.join(", ") || "Nenhuma"}\n` +
-          `Serviços: ${summary.services.join(", ") || "Nenhum"}\n` +
-          `Acompanhamentos: ${summary.accompaniments.join(", ") || "Nenhum"}\n` +
-          `Total: ${formatCurrency(calculateTotal)}\n\n` +
-          `Data: ${formData.date}\n` +
-          `Horário: ${formData.time}\n` +
-          `Endereço: ${formData.address}`,
-      )
-      window.open(`${COMPANY_INFO.whatsapp}?text=${message}`, "_blank")
-    }, 2000)
+      const data = (await response.json().catch(() => null)) as { error?: string; orderNumber?: number } | null
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Não foi possível criar o agendamento. Tente novamente.")
+      }
+
+      setCreatedOrderNumber(data?.orderNumber ?? null)
+      setIsSuccess(true)
+
+      setTimeout(() => {
+        const orderLine = data?.orderNumber ? `Pedido: #${data.orderNumber}\n` : ""
+        const message = encodeURIComponent(
+          `Olá! Gostaria de agendar minha resenha:\n\n` +
+            orderLine +
+            `Nome: ${formData.name}\n` +
+            `Pessoas: ${summary.guests}\n` +
+            `Kit: ${summary.meatKit}\n` +
+            `Bebidas: ${summary.beverages.join(", ") || "Nenhuma"}\n` +
+            `Serviços: ${summary.services.join(", ") || "Nenhum"}\n` +
+            `Acompanhamentos: ${summary.accompaniments.join(", ") || "Nenhum"}\n` +
+            `Total: ${formatCurrency(calculateTotal)}\n\n` +
+            `Data: ${formData.date}\n` +
+            `Horário: ${formData.time}\n` +
+            `Endereço: ${formData.address}`,
+        )
+        window.open(`${COMPANY_INFO.whatsapp}?text=${message}`, "_blank")
+      }, 2000)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Não foi possível criar o agendamento. Tente novamente."
+      setSubmitError(message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -173,7 +208,17 @@ export function StepCheckout() {
       </div>
 
       {/* Booking Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open)
+          if (open) {
+            setIsSuccess(false)
+            setSubmitError(null)
+            setCreatedOrderNumber(null)
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">Agendar Resenha</DialogTitle>
@@ -186,6 +231,7 @@ export function StepCheckout() {
                 <Check className="w-8 h-8 text-green-500" />
               </div>
               <h3 className="text-xl font-bold text-foreground">Pedido Enviado!</h3>
+              {createdOrderNumber && <p className="text-sm text-muted-foreground">Pedido #{createdOrderNumber}</p>}
               <p className="text-muted-foreground">
                 Você será redirecionado para o WhatsApp para confirmar os detalhes.
               </p>
@@ -259,6 +305,8 @@ export function StepCheckout() {
                   />
                 </div>
               </div>
+
+              {submitError && <p className="text-sm text-destructive">{submitError}</p>}
 
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Enviando..." : "Confirmar Agendamento"}

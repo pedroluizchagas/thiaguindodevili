@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { SectionHeader } from "@/components/ui/section-header"
 import { Button } from "@/components/ui/button"
 import { ResenhaBuilder } from "@/components/builder/resenha-builder"
@@ -10,6 +10,12 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 export function BuilderSection() {
   const [isBuilderOpen, setIsBuilderOpen] = useState(false)
+
+  useEffect(() => {
+    const handleOpen = () => setIsBuilderOpen(true)
+    window.addEventListener("qff:open-builder", handleOpen)
+    return () => window.removeEventListener("qff:open-builder", handleOpen)
+  }, [])
 
   const features = [
     {

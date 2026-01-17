@@ -19,6 +19,11 @@ export function HeroSection() {
     }
   }, [])
 
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id)
+    el?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Video Placeholder */}
@@ -72,6 +77,10 @@ export function HeroSection() {
             <Button
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-lg px-8 py-6 animate-glow"
+              onClick={() => {
+                scrollToSection("monte-sua-resenha")
+                window.dispatchEvent(new CustomEvent("qff:open-builder"))
+              }}
             >
               QUERO MINHA RESENHA PRONTA AGORA
             </Button>
@@ -79,6 +88,9 @@ export function HeroSection() {
               size="lg"
               variant="outline"
               className="border-border text-foreground hover:bg-secondary font-semibold text-lg px-8 py-6 group bg-transparent"
+              onClick={() => {
+                scrollToSection("como-funciona")
+              }}
             >
               <Play size={20} className="mr-2 group-hover:text-primary transition-colors" />
               Ver Como Funciona
